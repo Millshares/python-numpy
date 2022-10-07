@@ -1,1 +1,64 @@
+1.时间日期与时间增量：在np中我们可以很方便的将字符串装换成时间日期类型：datetime64 （datetime已经被Python使用）
+时间日期的单位Y	年	h	小时 M	月	m	分钟 W	周	s	秒 D	天	ms	毫秒
+  在默认的情况下：np会根据字符串自动选择对应单位：
+  a = np.datetime64('2020-03-01')
+  print(a, a.dtype)  # 2020-03-01 datetime64[D]
+  a = np.datetime64('2020-03')
+  print(a, a.dtype)  # 2020-03 datetime64[M]
+  a = np.datetime64('2020-03-08 20:00:05')
+  print(a, a.dtype)  # 2020-03-08T20:00:05 datetime64[s]
+  a = np.datetime64('2020-03-08 20:00')
+  print(a, a.dtype)  # 2020-03-08T20:00 datetime64[m]
+  
+  在字符串创建datetime64类型时，可以强制指定使用的单位
+  a = np.datetime64('2020-03', 'D')
+  print(a, a.dtype)  # 2020-03-01 datetime64[D]
+  a = np.datetime64('2020-03', 'Y')
+  print(a, a.dtype)  # 2020 datetime64[Y]
+  
+  print(np.datetime64('2020-03') == np.datetime64('2020-03-01'))  # True 时间向下取的时候默认为1 
+  print(np.datetime64('2020-03') == np.datetime64('2020-03-02'))  #False
+  如果两个不同的单位的datetime64对象具有不同单位，他们也可能代表相同时间，从大到小转换时是安全的
+  
+  在创建datetime64数组时，如果单位不统一，则一律转换为其中的最小单位。
+  a = np.array(['2020-03', '2020-03-08', '2020-03-08 20:00'], dtype='datetime64')
+  print(a, a.dtype)# ['2020-03-01T00:00' '2020-03-08T00:00' '2020-03-08T20:00'] datetime64[m]
+  
+  在使用arrange（）创建datetime64数组，用于生成日期范围
+  a = np.arange('2020-08-01', '2020-08-10', dtype=np.datetime64)
+  print(a)
+  # ['2020-08-01' '2020-08-02' '2020-08-03' '2020-08-04' '2020-08-05'
+  #  '2020-08-06' '2020-08-07' '2020-08-08' '2020-08-09']
+  print(a.dtype)  # datetime64[D]
+  
+  a = np.arange('2020-08-01 20:00', '2020-08-10', dtype=np.datetime64)
+  print(a)
+  # ['2020-08-01T20:00' '2020-08-01T20:01' '2020-08-01T20:02' ...
+  #  '2020-08-09T23:57' '2020-08-09T23:58' '2020-08-09T23:59']
+  print(a.dtype)  # datetime64[m]
+  
+  datetime64与datetime64之间的运算
+  timedelta64表示两个datetime64之间的差。与相减运算中的两个datetime64中较小的单位保持一致。
+  a = np.datetime64('2020-03-08') - np.datetime64('2020-03-07') 
+  b = np.datetime64('2020-03-08') - np.datetime64('202-03-07 08:00')
+  c = np.datetime64('2020-03-08') - np.datetime64('2020-03-07 23:00', 'D')
+  print(a, a.dtype)  # 1 days timedelta64[D]
+  print(b, b.dtype)  # 956178240 minutes timedelta64[m]
+  print(c, c.dtype)  # 1 days timedelta64[D]
 
+  a = np.datetime64('2020-03') + np.timedelta64(20, 'D')#可以与datetime64类型进行运算
+  b = np.datetime64('2020-06-15 00:00') + np.timedelta64(12, 'h')
+  print(a, a.dtype)  # 2020-03-21 datetime64[D]
+  print(b, b.dtype)  # 2020-06-15T12:00 datetime64[m]
+  生成 timedelta64时，要注意年（'Y'）和月（'M'）这两个单位无法和其它单位进行运算
+  
+  
+  timedelta64 的运算
+  dt = datetime.datetime(year=2020, month=6, day=1, hour=20, minute=5, second=30)
+  dt64 = np.datetime64(dt, 's')
+  print(dt64, dt64.dtype)
+  # 2020-06-01T20:05:30 datetime64[s]
+  dt2 = dt64.astype(datetime.datetime)
+  print(dt2, type(dt2))
+  # 2020-06-01 20:05:30 <class 'datetime.datetime'>
+  
